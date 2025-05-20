@@ -1,6 +1,4 @@
 import pandas as pd
-import os
-import numpy as np
 
 def normalize_columns_names(columns):
     """
@@ -34,6 +32,13 @@ def read_video_labels_df(path):
         'pas': 'pas_score',
         'video': 'video_id'
     })
-
     df = df.dropna(subset=['video_id'])
+
+    df['video_id'] = df['video_id'].astype(int)
+    df['frame_max_constricao'] = df['frame_max_constricao'].astype(int)
+    # df['frame_repouso'] = df['frame_repouso'].astype(int)
+    df['pas_frame'] = df['pas_frame'].astype(float)
+    df['pas_score'] = df['pas_score'].astype(float)
+
+
     return df
