@@ -1,5 +1,6 @@
 data/*
 .DS_Store
 Data_Synthesis_for_VFSS.pdf
+__pycache__
 
 *.pyc
