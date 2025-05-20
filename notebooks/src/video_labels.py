@@ -34,4 +34,6 @@ def read_video_labels_df(path):
         'pas': 'pas_score',
         'video': 'video_id'
     })
+
+    df = df.dropna(subset=['video_id'])
     return df
