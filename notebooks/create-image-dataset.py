@@ -16,6 +16,7 @@ def parse_args():
     parser.add_argument('--labels', type=str, default='data/rotulos/Frames e PAS.xlsx', help='Path to the labels file')
     parser.add_argument('--video_id', type=str, default='1', help='ID of the video to play')
     parser.add_argument('--output_dir', type=str, default='data/images/max_constriction/', help='Path to the output directory for images')
+    parser.add_argument('--frame_size', type=tuple, default=(512, 512), help='Size of the output images (width, height)')
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -27,7 +28,12 @@ if __name__ == "__main__":
     logging.info("Labels dataframe loaded successfully.")
 
     # Create a dataset of images from the maximum constriction frames of videos
-    create_max_constriction_dataset(df_frames_pas, args.video_dir, args.output_dir)
+    create_max_constriction_dataset(
+        df_labels = df_frames_pas,
+        video_dir = args.video_dir,
+        output_dir = args.output_dir,
+        frame_size = args.frame_size
+    )
     logging.info("Max constriction dataset created successfully.")
 
     # play_video(
