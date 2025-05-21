@@ -3,4 +3,6 @@ data/*
 Data_Synthesis_for_VFSS.pdf
 __pycache__
 
+.ipynb_checkpoints
+
 *.pyc
