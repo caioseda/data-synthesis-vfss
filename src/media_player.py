@@ -3,6 +3,7 @@ import cv2 as cv
 import numpy as np
 import logging
 import os
+from PIL import Image
 
 def play_video(video_id, video_dir='data/videos/', start_frame=0, end_frame=None):
     """
@@ -136,4 +137,6 @@ def save_frame_as_image(frame, output_path, log=False):
     if log:
         logging.info(f"Saving frame to {output_path}")
     
-    cv.imwrite(output_path, frame)
+    # Ensure the output directory exists
+    image = Image.fromarray(cv.cvtColor(frame, cv.COLOR_BGR2RGB))
+    image.save(output_path)
