@@ -1,9 +1,7 @@
-from .utils import get_video_path_from_id
-import cv2 as cv
-import numpy as np
+from src.utils import get_video_path_from_id
 import logging
-import os
-from PIL import Image
+import argparse
+import cv2 as cv
 
 def play_video(video_id, video_dir='data/videos/', start_frame=0, end_frame=None):
     """
@@ -90,53 +88,23 @@ def play_video(video_id, video_dir='data/videos/', start_frame=0, end_frame=None
     cap.release()
     cv.destroyAllWindows()
 
-def get_video_frame(video_id, frame_number, video_dir='data/videos/'):
-    """
-    Get a specific frame from a video.
-
-    Parameters:
-        video_id (str): The ID of the video.
-        frame_number (int): Frame number to extract.
-        video_dir (str): The directory where the videos are stored.
-
-    Returns:
-        frame (numpy.ndarray): The extracted frame as a numpy array.
-    """
-    # Get the video path
-    video_path = get_video_path_from_id(video_id, video_dir)
+def parse_args():
+    parser = argparse.ArgumentParser(description="Play a video with frame navigation.")
+    parser.add_argument('-s', '--video_id', type=str, required=True, help='ID of the video to play')
+    parser.add_argument('--video_dir', type=str, default='data/videos/', help='Path to the video directory')
+    parser.add_argument('--start_frame', type=int, default=0, help='Frame number to start playing the video from')
+    parser.add_argument('--end_frame', type=int, default=None, help='Frame number to stop playing the video at')
+    return parser.parse_args()
     
-    # Load the video
-    cap = cv.VideoCapture(video_path)
+if __name__ == "__main__":
+    # Parse command line arguments
+    args = parse_args()
     
-    if not cap.isOpened():
-        print("Error: Could not open video.")
-        return None
-
-    # Set the frame position
-    cap.set(cv.CAP_PROP_POS_FRAMES, frame_number)
-
-    ret, frame = cap.read()
-    if ret:
-        return frame
-    else:
-        print("Error: Could not read frame.")
-        return None
-        
-def save_frame_as_image(frame, output_path, log=False):
-    """
-    Save a video frame as an image.
-
-    Parameters:
-        frame (numpy.ndarray): The frame to save.
-        output_path (str): Path to save the image.
-        log (bool): Whether to log the saving process.
-
-    Returns:
-        None
-    """
-    if log:
-        logging.info(f"Saving frame to {output_path}")
-    
-    # Ensure the output directory exists
-    image = Image.fromarray(cv.cvtColor(frame, cv.COLOR_BGR2RGB))
-    image.save(output_path)
+    # Play the video
+    play_video(
+        video_id=args.video_id,
+        video_dir=args.video_dir,
+        start_frame=args.start_frame,
+        end_frame=args.end_frame
+    )
+    logging.info("Video played successfully.")
