@@ -55,6 +55,7 @@ We also provide tools like:
 ### Playing Videos
 To play a video, use the `media_player.py` script. You can specify the video_dir, video ID, start frame, and end frame.
 You can navigate through the video using the arrow keys and pause/play using the spacebar. Use 'q' to quit the video.
+You can also toggle the display of time and frame number using 'i' and toggle the autoclose behavior using 'a'.
 
 ```bash
 python media_player.py \
