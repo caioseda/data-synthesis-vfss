@@ -23,11 +23,8 @@ def create_dataset_dir(args):
             if os.path.isdir(os.path.join(args.output_dir, d))
             and dataset_type in d
         ]
-        print(f"Previous run dirs ({args.output_dir}): {prev_run_dirs}")
         prev_run_ids = [re.match(r'^\d+', d) for d in prev_run_dirs]
-        print(f"Previous run IDs: {prev_run_ids}")
         prev_run_ids = [int(d.group(0)) for d in prev_run_ids if d is not None]
-        print(f"Previous run IDs: {prev_run_ids}")
         cur_run_id = max(prev_run_ids, default=-1) + 1
 
     dataset_dir = f'{cur_run_id:05d}-{dataset_type}-{args.frame_size[0]}'
@@ -81,10 +78,6 @@ if __name__ == "__main__":
     if args.dry_run:
         logging.info("Dry run mode. Only creating the dataset directory.")
         exit(0)
-    
-    # Read the rotulos DataFrame
-    df_frames_pas = read_video_labels_df(args.labels)
-    logging.info("Labels dataframe loaded successfully.")
 
     # Create a dataset of images from the maximum constriction frames of videos
     if args.dataset_type == 'all_frames':
@@ -95,6 +88,10 @@ if __name__ == "__main__":
         )
         logging.info("All frames dataset created successfully.")
     else:
+        # Read the rotulos DataFrame
+        df_frames_pas = read_video_labels_df(args.labels)
+        logging.info("Labels dataframe loaded successfully.")
+
         # Create a dataset of images from the maximum constriction frames of videos
         create_max_constriction_dataset(
             df_labels = df_frames_pas,
