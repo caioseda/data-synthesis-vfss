@@ -45,10 +45,9 @@ def parse_args():
 
     parser.add_argument('--video-dir', type=str, default='data/videos/', help='Path to the video directory')
     parser.add_argument('--labels', type=str, default='data/rotulos/Frames e PAS.xlsx', help='Path to the labels file')
-    parser.add_argument('--video-id', type=str, default='1', help='ID of the video to play')
     parser.add_argument('--output-dir', type=str, default='data/images/', help='Path to the output directory for images')
     parser.add_argument('--frame-size', type=tuple, default=(512, 512), help='Size of the output images (width, height)')
-    parser.add_argument('--dataset-type', type=str, default='all_frames', choices=['max_constriction', 'all_frames'], help='Type of dataset to create: max_constriction or all_frames')
+    parser.add_argument('--dataset-type', type=str, default='max_constriction', choices=['max_constriction', 'all_frames'], help='Type of dataset to create: max_constriction or all_frames')
     parser.add_argument('--dry-run', action='store_true', help='If set, only create the dataset directory without processing videos')
     
     args = parser.parse_args()
