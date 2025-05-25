@@ -1,12 +1,13 @@
-data/*
-.DS_Store
-Data_Synthesis_for_VFSS.pdf
-__pycache__
-
-.ipynb_checkpoints
-
-reals.png
-
-*.pyc
-
 !.gitkeep
+
+# Ignore all files in the data directory
+data/*
+
+# Ignore research article proposal 
+Data_Synthesis_for_VFSS.pdf
+
+# Ignore irrelevant files
+.DS_Store
+__pycache__
+.ipynb_checkpoints
+*.pyc
