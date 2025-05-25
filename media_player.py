@@ -3,7 +3,65 @@ import logging
 import argparse
 import cv2 as cv
 
-def play_video(video_id, video_dir='data/videos/', start_frame=0, end_frame=None):
+def write_text(frame, text, pos, font=cv.FONT_HERSHEY_SIMPLEX, font_scale=0.6, color=(0, 255, 0), thickness=2):
+    """
+    Writes a given text on the frame at the specified position.
+    
+    Parameters:
+        frame (ndarray): The current video frame.
+        text (str): The text to overlay.
+        pos (tuple): The (x, y) coordinates for the text.
+        font (int): OpenCV font type.
+        font_scale (float): Scale factor for the text size.
+        color (tuple): Color of the text in BGR.
+        thickness (int): Thickness of the text.
+    
+    Returns:
+        The frame with the text overlay.
+    """
+    cv.putText(frame, text, pos, font, font_scale, color, thickness)
+    return frame
+
+def write_frame_number(frame, frame_idx, total_frames):
+    """
+    Overlays the frame number on the top right of the frame.
+    
+    Parameters:
+        frame (ndarray): The current video frame.
+        frame_idx (int): The current frame index.
+    
+    Returns:
+        The frame with the frame number overlay.
+    """
+    text = f"Frame: {frame_idx:03d} / {total_frames:03d}"
+    (text_width, text_height), _ = cv.getTextSize(text, cv.FONT_HERSHEY_SIMPLEX, 1, 2)
+    x_pos = 10
+    y_pos = 70
+    return write_text(frame, text, (x_pos, y_pos))
+
+def write_time_info(frame, frame_idx, fps, total_minutes, total_seconds):
+    """
+    Overlays the current time and total duration on the top left of the frame.
+    
+    Parameters:
+        frame (ndarray): The current video frame.
+        frame_idx (int): The current frame index.
+        fps (float): Frames per second of the video.
+        total_minutes (int): Total minutes of the video.
+        total_seconds (int): Total seconds (remaining after minutes) of the video.
+    
+    Returns:
+        The frame with the time info overlay.
+    """
+    current_time = frame_idx / fps
+    current_minutes = int(current_time // 60)
+    current_seconds = int(current_time % 60)
+    text = f"{current_minutes}m {current_seconds:02d}s / {total_minutes}m {total_seconds:02d}s"
+    x_pos = 10
+    y_pos = 30
+    return write_text(frame, text, (x_pos, y_pos))
+
+def play_video(video_id, video_dir='data/videos/', start_frame=0, end_frame=None, paused=False, show_info=True):
     """
     Play a video from a specified start frame to an end frame.
     The video can be paused and navigated frame by frame using the arrow keys.
@@ -11,6 +69,7 @@ def play_video(video_id, video_dir='data/videos/', start_frame=0, end_frame=None
     Press 'space' to pause/play the video.
     Press 'right arrow' to go to the next frame.
     Press 'left arrow' to go to the previous frame.
+    Press 'i' to toggle the time and frame number displays.
 
     Parameters:
         video_id (str): The ID of the video to play.
@@ -21,68 +80,63 @@ def play_video(video_id, video_dir='data/videos/', start_frame=0, end_frame=None
     Returns:
         None
     """
-    # Get the video path
     video_path = get_video_path_from_id(video_id, video_dir)
-
-    # Load the video
     cap = cv.VideoCapture(video_path)
     
-    # Check if video loaded successfully
     if not cap.isOpened():
         logging.error("Error: Could not open video.")
         exit()
 
-    # Check if end_frame is valid
+    fps = cap.get(cv.CAP_PROP_FPS)
     total_frames = int(cap.get(cv.CAP_PROP_FRAME_COUNT))
-    if end_frame is None:
+
+    if end_frame is None or end_frame > total_frames:
         end_frame = total_frames
-    elif end_frame > total_frames:
-        end_frame = total_frames
-    
-    # Check if start_frame is valid
-    if start_frame > 0:
-        frame_idx = start_frame
     
     if start_frame >= end_frame:
         logging.error("Error: start_frame must be less than end_frame.")
         exit()
 
-    # Frame index
-    frame_idx = 0
-    paused = False
-    while True:
-        key = cv.waitKey(30)
+    frame_idx = start_frame
+    cap.set(cv.CAP_PROP_POS_FRAMES, frame_idx)
 
-        if key == ord('q'):  # Quit
+    total_time = total_frames / fps
+    total_minutes = int(total_time // 60)
+    total_seconds = int(total_time % 60)
+
+    while True:
+        info = {}
+        delay = int(1000 / fps) if not paused else 30
+        key = cv.waitKey(delay)
+
+        if key == ord('q'):
             break
-        elif key == 32:  # Spacebar toggles pause/play
+        elif key == ord(' '):
             paused = not paused
-        elif paused and (key == 3 or key == 2555904):  # Right Arrow (next frame)
+        elif key == ord('i'):
+            show_info = not show_info
+        elif paused and (key == 3 or key == 2555904):  # Right Arrow
             if frame_idx < total_frames - 1:
                 frame_idx += 1
-                paused = True
-        elif paused and (key == 2 or key == 2424832):  # Left Arrow (previous frame)
+        elif paused and (key == 2 or key == 2424832):  # Left Arrow
             if frame_idx > 0:
                 frame_idx -= 1
-                paused = True
 
-        if paused:
-            if key != -1:
-                print("Paused at frame: " + str(frame_idx))
-                print("The key code is:"+str(key))
-        
-        # if not paused, play the video normally
         if not paused:
             frame_idx += 1
 
         if frame_idx < end_frame:
-            # Set next frame position
             cap.set(cv.CAP_PROP_POS_FRAMES, frame_idx)
-            # Read the next frame and display it
             ret, frame = cap.read()
+            if not ret:
+                break
+
+            if show_info:
+                frame = write_frame_number(frame, frame_idx, total_frames)
+                frame = write_time_info(frame, frame_idx, fps, total_minutes, total_seconds)
+
             cv.imshow("Video", frame)
-        else: 
-            # If we reach the end of the video, break the loop
+        else:
             break
 
     cap.release()
@@ -92,19 +146,30 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Play a video with frame navigation.")
     parser.add_argument('-s', '--video_id', type=str, required=True, help='ID of the video to play')
     parser.add_argument('--video_dir', type=str, default='data/videos/', help='Path to the video directory')
-    parser.add_argument('--start_frame', type=int, default=0, help='Frame number to start playing the video from')
-    parser.add_argument('--end_frame', type=int, default=None, help='Frame number to stop playing the video at')
+    parser.add_argument('-st','--start_frame', type=int, default=0, help='Frame number to start playing the video from')
+    parser.add_argument('-e','--end_frame', type=int, default=None, help='Frame number to stop playing the video at')
+    parser.add_argument('--paused', action='store_true', default=False, help='Start the video in paused state')
+    parser.add_argument('--show_info', action='store_true', default=True, help='Show time and frame number info')
+
     return parser.parse_args()
     
 if __name__ == "__main__":
-    # Parse command line arguments
     args = parse_args()
     
-    # Play the video
+    # Print commands for user
+    print("Press 'q' to quit the video.")
+    print("Press 'space' to pause/play the video.")
+    print("Press 'right arrow' to go to the next frame.")
+    print("Press 'left arrow' to go to the previous frame.")
+    print("Press 'i' to toggle the time and frame number displays.")
+    logging.info("Starting video playback...")
+
     play_video(
         video_id=args.video_id,
         video_dir=args.video_dir,
         start_frame=args.start_frame,
-        end_frame=args.end_frame
+        end_frame=args.end_frame,
+        paused=args.paused,
+        show_info=args.show_info
     )
     logging.info("Video played successfully.")
