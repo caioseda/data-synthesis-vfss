@@ -12,3 +12,5 @@ __pycache__
 .ipynb_checkpoints
 *.pyc
 .env
+run-training-on-cloud.sh
+docs/prime-intellect-run.txt
