@@ -64,3 +64,28 @@ def get_all_frames(video_id, video_dir='data/videos/'):
         frames.append(frame)
     
     return frames
+
+def save_frames_as_video(frames, output_path, fps=30):
+    """
+    Save a list of frames as a video file.
+
+    Parameters:
+        frames (list): List of frames as numpy arrays.
+        output_path (str): Path to save the output video.
+        fps (int): Frames per second for the video.
+    """
+    if not frames:
+        logging.error("No frames to save.")
+        return
+
+    height, width, layers = frames[0].shape
+    fourcc = cv.VideoWriter_fourcc(*'mp4v')  # Codec for mp4
+    video_writer = cv.VideoWriter(output_path, fourcc, fps, (width, height))
+
+    for frame in frames:
+        video_writer.write(frame)
+
+    video_writer.release()
+    logging.info(f"Video saved as {output_path}")
+
+
