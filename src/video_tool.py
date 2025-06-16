@@ -2,6 +2,7 @@ from .utils import get_video_path_from_id
 import cv2 as cv
 from PIL import Image
 import logging
+from tqdm import tqdm
 
 def get_video_frame(video_id, frame_number, video_dir='data/videos/'):
     """
@@ -87,5 +88,40 @@ def save_frames_as_video(frames, output_path, fps=30):
 
     video_writer.release()
     logging.info(f"Video saved as {output_path}")
+
+def convert_avi_to_mp4(input_path, output_path):
+    """
+    Convert an AVI video file to MP4 format.
+
+    Parameters:
+        input_path (str): Path to the input AVI file.
+        output_path (str): Path to save the output MP4 file.
+    """
+    try:
+        cap = cv.VideoCapture(input_path)
+        if not cap.isOpened():
+            logging.error("Error: Could not open video.")
+            return
+
+        fourcc = cv.VideoWriter_fourcc(*'mp4v')
+        fps = cap.get(cv.CAP_PROP_FPS)
+        width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
+        total_frames = int(cap.get(cv.CAP_PROP_FRAME_COUNT))
+
+        out = cv.VideoWriter(output_path, fourcc, fps, (width, height))
+
+        for _ in tqdm(range(total_frames), desc="Converting video"):
+            ret, frame = cap.read()
+            if not ret:
+                break
+            out.write(frame)
+
+        cap.release()
+        out.release()
+        logging.info(f"Converted {input_path} to {output_path}")
+
+    except Exception as e:
+        logging.error(f"Error during conversion: {e}")
 
 
