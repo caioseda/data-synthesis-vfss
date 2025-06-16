@@ -1,10 +1,10 @@
 !.gitkeep
 
 # Ignore all files in the data directory
-data/
+/data/*
 
 # Except for the following files
-!data/training_runs/00004-stylegan2-00000-all-frames-512-gpus2-batch32-gamma1.6384/*
+!/data/figs/
 
 # Ignore research article proposal 
 Data_Synthesis_for_VFSS.pdf
