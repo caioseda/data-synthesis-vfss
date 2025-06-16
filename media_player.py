@@ -1,4 +1,5 @@
 from src.utils import get_video_path_from_id
+from src.video_tool import convert_avi_to_mp4
 import logging
 import argparse
 import cv2 as cv
@@ -119,7 +120,6 @@ def play_video(video_id, video_dir='data/videos/', start_frame=0, end_frame=None
     Returns:
         None
     """
-    print('awad')
     video_path = get_video_path_from_id(video_id, video_dir)
     cap = cv.VideoCapture(video_path)
 
@@ -157,6 +157,9 @@ def play_video(video_id, video_dir='data/videos/', start_frame=0, end_frame=None
         elif key == ord('a'):
             autoclose = not autoclose
             print("Autoclose toggled", "ON" if autoclose else "OFF")
+        elif key == ord('e'):
+            output_path = video_path.replace('.avi', '.mp4')
+            convert_avi_to_mp4(video_path, output_path)
         elif paused and (key == 3 or key == 2555904):  # Right Arrow
             if frame_idx < total_frames - 1:
                 frame_idx += 1
